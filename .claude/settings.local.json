@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv add:*)",
+      "Bash(/usr/bin/python3:*)",
+      "Bash(pyenv versions:*)",
+      "Bash(python3:*)",
+      "Bash(uv run python -m pytest:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
