@@ -1,3 +1,3 @@
-completed: Implemented F02/T02 — wrote and passed 3 menu dispatch tests; F02 all tasks done and archived.
-state: 0 spec gaps | 0 features need tasks | 3 tasks pending
-next: /task-next
+completed: F11 implemented — splits multi-word tags into individual words on affected bookmarks.
+state: 0 spec gaps | 0 features pending | 29 tests passing
+next: /milestone or /features-update to add more features

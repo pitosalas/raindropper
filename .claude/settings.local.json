@@ -6,7 +6,8 @@
       "Bash(pyenv versions:*)",
       "Bash(python3:*)",
       "Bash(uv run python -m pytest:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(uv run:*)"
     ]
   }
 }

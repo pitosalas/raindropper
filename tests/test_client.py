@@ -8,17 +8,19 @@ from raindropper.client import RaindropClient
 class TestRaindropClient(unittest.TestCase):
 
     @patch.dict(os.environ, {"RAINDROP_TOKEN": "test-token"})
-    @patch("raindropper.client.requests.get")
-    def test_fetch_tags_returns_items(self, mock_get):
+    @patch("raindropper.client.time.sleep")
+    @patch("raindropper.client.requests.request")
+    def test_fetch_tags_returns_items(self, mock_request, mock_sleep):
         mock_response = MagicMock()
-        mock_response.json.return_value = {"items": [{"tag": "python", "count": 1}]}
-        mock_get.return_value = mock_response
+        mock_response.json.return_value = {"items": [{"_id": "python", "count": 1}]}
+        mock_request.return_value = mock_response
 
         client = RaindropClient()
         tags = client.fetch_tags()
 
-        self.assertEqual(tags, [{"tag": "python", "count": 1}])
+        self.assertEqual(tags, [{"_id": "python", "count": 1}])
         mock_response.raise_for_status.assert_called_once()
+        mock_sleep.assert_called_once_with(0.5)
 
     @patch.dict(os.environ, {}, clear=True)
     def test_missing_token_raises(self):
@@ -27,11 +29,12 @@ class TestRaindropClient(unittest.TestCase):
             RaindropClient()
 
     @patch.dict(os.environ, {"RAINDROP_TOKEN": "test-token"})
-    @patch("raindropper.client.requests.get")
-    def test_fetch_tags_empty_items(self, mock_get):
+    @patch("raindropper.client.time.sleep")
+    @patch("raindropper.client.requests.request")
+    def test_fetch_tags_empty_items(self, mock_request, mock_sleep):
         mock_response = MagicMock()
         mock_response.json.return_value = {}
-        mock_get.return_value = mock_response
+        mock_request.return_value = mock_response
 
         client = RaindropClient()
         tags = client.fetch_tags()

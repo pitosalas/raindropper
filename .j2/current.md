@@ -1,26 +1,36 @@
 # Current Session State
 
-## Just Completed
-- F01 (Raindrop API Client): `RaindropClient` in `client.py`, reads `RAINDROP_TOKEN` env var, `fetch_tags()` calls API. 3 tests passing.
-- F02 (Interactive CLI Menu): `run_menu()` loop in `main.py`, dispatches via `getattr(actions, handler_name)`. 3 tests passing.
-- Created `actions.py` with `list_single_use_tags()` (covers F03/T01).
+## What was just completed
+- F09: delete tags in selection set (with confirmation)
+- F10: select multi-word tags into selection set
+- F11: split multi-word tags into individual words on bookmarks (milestone granted)
+- Rate limiting: 0.5s delay between all API calls via `_call` wrapper in client
+- All task files archived to `.j2/tasks/done/`
+- README.md created
+- features.md reorganized (active above divider, completed below)
 
-## In Progress
-- F03 (List Single-Use Tags) — `actions.py` implementation already done; tests (T03) not yet written.
+## In progress
+Nothing — all 11 features done, clean state.
 
-## Next Steps
-1. Write `tests/test_actions.py` for `list_single_use_tags` (F03/T03)
-2. Mark F03 tasks done, archive F03.md
-3. Update features.md for F02 and F03 status
-4. Run `/milestone` for remaining features
+## Next steps
+- `/features-update` to add new features
+- Or `/milestone` to formally close out remaining features (F01–F10 have no milestone record)
 
-## Open Questions
-- None.
+## Open questions
+- None
 
-## Feature Status
+## Feature status
 
-| Feature | Status | Tests |
-|---------|--------|-------|
-| F01 — Raindrop API Client | done | passing |
-| F02 — Interactive CLI Menu | done | passing |
-| F03 — List Single-Use Tags | in progress | not written |
+| Feature | Status |
+|---|---|
+| F01 Raindrop API Client | done |
+| F02 Interactive CLI Menu | done |
+| F03 Selection Set | done |
+| F04 Select Single-Use Tags | done |
+| F05 Print Selection Set | done |
+| F06 Select Gibberish Tags | done |
+| F07 Remove Stop Words | done |
+| F08 Select Bookmarks with Mixed Tags | done |
+| F09 Delete Tags in Selection Set | done |
+| F10 Select Multi-Word Tags | done |
+| F11 Split Multi-Word Tags on Bookmarks | done |
