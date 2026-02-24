@@ -97,8 +97,28 @@ def split_multiword_tags(client, selection_set):
                 if word not in new_tags:
                     new_tags.append(word)
             client.update_bookmark_tags(bookmark["_id"], new_tags)
+            print(".", end="", flush=True)
             updated += 1
+    print()
     print(f"Updated {updated} bookmark(s).")
+
+
+def select_nonsolitary_single_use_tags(client, selection_set):
+    # Select single-use tags that appear on bookmarks which also have other tags.
+    tags = client.fetch_tags()
+    single_use = {t["_id"]: t for t in tags if t.get("count", 0) == 1}
+    bookmarks = client.fetch_bookmarks()
+    tag_to_bookmark_tag_counts = {}
+    for bookmark in bookmarks:
+        for tag in bookmark.get("tags", []):
+            if tag in single_use:
+                tag_to_bookmark_tag_counts[tag] = len(bookmark.get("tags", []))
+    matches = [
+        single_use[name] for name, count in tag_to_bookmark_tag_counts.items()
+        if count > 1
+    ]
+    selection_set.add_all(matches, kind="tags")
+    print(f"Added {len(matches)} tag(s) to selection set.")
 
 
 def delete_selection_set_tags(client, selection_set):

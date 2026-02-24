@@ -3,6 +3,18 @@ Status values:
 - **Tests written**: `no` / `yes`
 - **Tests passing**: `n/a` / `no` / `yes`
 
+## F13 — Select Single-Use Tags That Are Not the Only Tag on a Bookmark
+**Priority**: High
+**Status**: done | Tests written: yes | Tests passing: yes
+**Description**: Fetch all tags and all bookmarks. Filter to tags with count == 1. For each such tag, find the bookmark that uses it. Include the tag in the selection set only if that bookmark also has at least one other tag. Add matching tags to the selection set (kind="tags"). Print how many were added.
+
+---
+
+## F12 — Progress Dots for Multi-Step Operations
+**Priority**: High
+**Status**: done | Tests written: yes | Tests passing: yes
+**Description**: In actions that loop over multiple items (e.g. `split_multiword_tags` iterating over bookmarks, `fetch_bookmarks` paginating), print a `.` without a newline after each iteration so the user can see progress. Print a newline when the loop completes.
+
 ---
 <!-- ACTIVE FEATURES ABOVE THIS LINE | COMPLETED FEATURES BELOW -->
 ---

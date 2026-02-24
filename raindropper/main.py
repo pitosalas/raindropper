@@ -7,6 +7,7 @@ load_dotenv()
 
 MENU_OPTIONS = [
     ("Select single-use tags", "select_single_use_tags"),
+    ("Select single-use tags with other tags", "select_nonsolitary_single_use_tags"),
     ("Select gibberish tags", "select_gibberish_tags"),
     ("Select multi-word tags", "select_multiword_tags"),
     ("Select bookmarks with mixed tags", "select_bookmarks_with_mixed_tags"),

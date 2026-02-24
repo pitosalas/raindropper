@@ -30,7 +30,9 @@ class RaindropClient:
             response = self._call("GET", "/raindrops/0", params={"perpage": perpage, "page": page})
             items = response.json().get("items", [])
             bookmarks.extend(items)
+            print(".", end="", flush=True)
             if len(items) < perpage:
+                print()
                 break
             page += 1
         return bookmarks

@@ -1,20 +1,16 @@
 # Current Session State
 
 ## What was just completed
-- F09: delete tags in selection set (with confirmation)
-- F10: select multi-word tags into selection set
-- F11: split multi-word tags into individual words on bookmarks (milestone granted)
-- Rate limiting: 0.5s delay between all API calls via `_call` wrapper in client
-- All task files archived to `.j2/tasks/done/`
-- README.md created
-- features.md reorganized (active above divider, completed below)
+- F12: progress dots in fetch_bookmarks pagination and split_multiword_tags loop (milestone granted)
+- F13: select_nonsolitary_single_use_tags — single-use tags that share bookmarks with other tags (milestone granted)
+- Task files F12, F13 archived to done/
+- Explicit dot-output test added for F12
 
 ## In progress
-Nothing — all 11 features done, clean state.
+Nothing — all features done and milestoned.
 
 ## Next steps
 - `/features-update` to add new features
-- Or `/milestone` to formally close out remaining features (F01–F10 have no milestone record)
 
 ## Open questions
 - None
@@ -34,3 +30,5 @@ Nothing — all 11 features done, clean state.
 | F09 Delete Tags in Selection Set | done |
 | F10 Select Multi-Word Tags | done |
 | F11 Split Multi-Word Tags on Bookmarks | done |
+| F12 Progress Dots | done |
+| F13 Select Nonsolitary Single-Use Tags | done |

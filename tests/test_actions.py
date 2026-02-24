@@ -1,6 +1,7 @@
+import unittest.mock
 from unittest.mock import MagicMock, patch
 
-from raindropper.actions import select_single_use_tags, print_selection_set, select_gibberish_tags, remove_stop_words, select_bookmarks_with_mixed_tags, select_multiword_tags, delete_selection_set_tags, split_multiword_tags
+from raindropper.actions import select_single_use_tags, print_selection_set, select_gibberish_tags, remove_stop_words, select_bookmarks_with_mixed_tags, select_multiword_tags, delete_selection_set_tags, split_multiword_tags, select_nonsolitary_single_use_tags
 from raindropper.selection_set import SelectionSet
 
 
@@ -189,6 +190,57 @@ def test_split_multiword_tags_empty_set():
         split_multiword_tags(client, ss)
     client.fetch_bookmarks_by_tag.assert_not_called()
     mock_print.assert_called_once_with("Selection set is empty.")
+
+
+def test_split_multiword_tags_prints_progress_dots():
+    ss = SelectionSet()
+    ss.add_all([{"_id": "machine learning"}], kind="tags")
+    client = MagicMock()
+    client.fetch_bookmarks_by_tag.return_value = [
+        {"_id": 1, "tags": ["machine learning"]},
+        {"_id": 2, "tags": ["machine learning"]},
+    ]
+    with patch("builtins.input", return_value="y"), patch("builtins.print") as mock_print:
+        split_multiword_tags(client, ss)
+    dot_calls = [c for c in mock_print.call_args_list if c == unittest.mock.call(".", end="", flush=True)]
+    assert len(dot_calls) == 2
+
+
+def test_select_nonsolitary_single_use_tags_includes_tag_with_companions():
+    tags = [{"_id": "rare", "count": 1}, {"_id": "common", "count": 5}]
+    bookmarks = [{"_id": 1, "tags": ["rare", "common"]}]
+    client = MagicMock()
+    client.fetch_tags.return_value = tags
+    client.fetch_bookmarks.return_value = bookmarks
+    ss = SelectionSet()
+    with patch("builtins.print"):
+        select_nonsolitary_single_use_tags(client, ss)
+    assert any(t["_id"] == "rare" for t in ss.items())
+
+
+def test_select_nonsolitary_single_use_tags_excludes_sole_tag():
+    tags = [{"_id": "rare", "count": 1}]
+    bookmarks = [{"_id": 1, "tags": ["rare"]}]
+    client = MagicMock()
+    client.fetch_tags.return_value = tags
+    client.fetch_bookmarks.return_value = bookmarks
+    ss = SelectionSet()
+    with patch("builtins.print") as mock_print:
+        select_nonsolitary_single_use_tags(client, ss)
+    assert ss.items() == []
+    mock_print.assert_called_once_with("Added 0 tag(s) to selection set.")
+
+
+def test_select_nonsolitary_single_use_tags_no_single_use():
+    tags = [{"_id": "common", "count": 5}]
+    bookmarks = [{"_id": 1, "tags": ["common"]}]
+    client = MagicMock()
+    client.fetch_tags.return_value = tags
+    client.fetch_bookmarks.return_value = bookmarks
+    ss = SelectionSet()
+    with patch("builtins.print"):
+        select_nonsolitary_single_use_tags(client, ss)
+    assert ss.items() == []
 
 
 def test_print_selection_set_empty():
