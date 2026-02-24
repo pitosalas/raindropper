@@ -17,7 +17,13 @@ Removes clutter and noise from my raindrop database
   - Select all tags which are used just once and save them in selection set
   - Print selection set
   - More to come
-- 
+
+## Tag Linting Rules
+- tags are gemerally nouns that have a meaning without more context
+- tags are generally but not always single words
+- Find tags that are simple variations of each other. Use the singular, throw out the plural.
+- Look at similar stems and consider deleting one of them
+
 ## Constraints
 - python 3.10+
 - raindrop.io api

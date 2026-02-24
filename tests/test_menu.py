@@ -7,7 +7,7 @@ from raindropper.selection_set import SelectionSet
 
 class TestRunMenu(unittest.TestCase):
 
-    @patch("raindropper.actions.select_single_use_tags")
+    @patch("raindropper.actions.delete_singleton_tags_from_bookmarks")
     @patch("builtins.input", side_effect=["1", "x"])
     def test_valid_option_calls_handler(self, mock_input, mock_handler):
         client = MagicMock()

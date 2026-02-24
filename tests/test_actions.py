@@ -1,7 +1,7 @@
 import unittest.mock
 from unittest.mock import MagicMock, patch
 
-from raindropper.actions import select_single_use_tags, print_selection_set, select_gibberish_tags, remove_stop_words, select_bookmarks_with_mixed_tags, select_multiword_tags, delete_selection_set_tags, split_multiword_tags, select_nonsolitary_single_use_tags, delete_singleton_tags_from_bookmarks
+from raindropper.actions import select_single_use_tags, print_selection_set, select_gibberish_tags, remove_stop_words, select_bookmarks_with_mixed_tags, select_multiword_tags, delete_selection_set_tags, split_multiword_tags, select_nonsolitary_single_use_tags, delete_singleton_tags_from_bookmarks, delete_tags_interactively, select_zero_bookmark_tags, rename_tag, delete_tag_by_name
 from raindropper.selection_set import SelectionSet
 
 
@@ -323,6 +323,60 @@ def test_delete_singleton_tags_multiple_singletons_per_bookmark():
     client.update_bookmark_tags.assert_called_once_with(1, ["r2", "common"])
 
 
+def test_delete_tags_interactively_empty_set():
+    ss = SelectionSet()
+    client = MagicMock()
+    with patch("builtins.print") as mock_print:
+        delete_tags_interactively(client, ss)
+    mock_print.assert_called_once_with("Selection set is empty.")
+    client.delete_tags.assert_not_called()
+
+
+def test_delete_tags_interactively_wrong_kind():
+    ss = SelectionSet()
+    ss.add_all([{"_id": 1, "title": "bm", "tags": []}], kind="bookmarks")
+    client = MagicMock()
+    with patch("builtins.print") as mock_print:
+        delete_tags_interactively(client, ss)
+    mock_print.assert_called_once_with("Selection set does not contain tags.")
+    client.delete_tags.assert_not_called()
+
+
+def test_delete_tags_interactively_all_confirmed():
+    ss = SelectionSet()
+    ss.add_all([{"_id": "alpha"}, {"_id": "beta"}], kind="tags")
+    client = MagicMock()
+    with patch("builtins.input", return_value="a"), patch("builtins.print") as mock_print:
+        delete_tags_interactively(client, ss)
+    assert client.delete_tag_with_cleanup.call_count == 2
+    client.delete_tag_with_cleanup.assert_any_call("alpha")
+    client.delete_tag_with_cleanup.assert_any_call("beta")
+    assert any("Deleted 2 of 2" in str(c) for c in mock_print.call_args_list)
+
+
+def test_delete_tags_interactively_all_declined():
+    ss = SelectionSet()
+    ss.add_all([{"_id": "alpha"}, {"_id": "beta"}], kind="tags")
+    client = MagicMock()
+    with patch("builtins.input", return_value=""), patch("builtins.print") as mock_print:
+        delete_tags_interactively(client, ss)
+    client.delete_tag_with_cleanup.assert_not_called()
+    assert any("Deleted 0 of 2" in str(c) for c in mock_print.call_args_list)
+
+
+def test_delete_tags_interactively_mixed():
+    ss = SelectionSet()
+    ss.add_all([{"_id": "alpha"}, {"_id": "beta"}, {"_id": "gamma"}], kind="tags")
+    client = MagicMock()
+    # "1 3" selects alpha (index 1) and gamma (index 3) from a single batch
+    with patch("builtins.input", return_value="1 3"), patch("builtins.print") as mock_print:
+        delete_tags_interactively(client, ss)
+    assert client.delete_tag_with_cleanup.call_count == 2
+    client.delete_tag_with_cleanup.assert_any_call("alpha")
+    client.delete_tag_with_cleanup.assert_any_call("gamma")
+    assert any("Deleted 2 of 3" in str(c) for c in mock_print.call_args_list)
+
+
 def test_delete_singleton_tags_empty_set():
     ss = SelectionSet()
     client = MagicMock()
@@ -350,3 +404,98 @@ def test_print_selection_set_bookmarks_no_tags_shows_empty_list():
     output = " ".join(str(c) for c in mock_print.call_args_list)
     assert "No Tags Here" in output
     assert "[]" in output
+
+
+def test_select_zero_bookmark_tags_adds_unused():
+    tags = [{"_id": "unused", "count": 0}, {"_id": "used", "count": 3}]
+    client = make_client(tags)
+    ss = SelectionSet()
+    with patch("builtins.print") as mock_print:
+        select_zero_bookmark_tags(client, ss)
+    assert ss.items() == [{"_id": "unused", "count": 0}]
+    assert ss.kind == "tags"
+    mock_print.assert_called_once_with("Added 1 tag(s) to selection set.")
+
+
+def test_select_zero_bookmark_tags_none_found():
+    tags = [{"_id": "used", "count": 2}]
+    client = make_client(tags)
+    ss = SelectionSet()
+    with patch("builtins.print") as mock_print:
+        select_zero_bookmark_tags(client, ss)
+    assert ss.items() == []
+    mock_print.assert_called_once_with("No zero-bookmark tags found.")
+
+
+def test_select_zero_bookmark_tags_mixed():
+    tags = [
+        {"_id": "a", "count": 0},
+        {"_id": "b", "count": 1},
+        {"_id": "c", "count": 0},
+    ]
+    client = make_client(tags)
+    ss = SelectionSet()
+    with patch("builtins.print"):
+        select_zero_bookmark_tags(client, ss)
+    ids = [t["_id"] for t in ss.items()]
+    assert ids == ["a", "c"]
+
+
+def test_rename_tag_single():
+    client = MagicMock()
+    client.merge_tag.return_value = 3
+    with patch("builtins.input", side_effect=["old", "new", ""]), patch("builtins.print") as mock_print:
+        rename_tag(client, SelectionSet())
+    client.merge_tag.assert_called_once_with("old", "new")
+    assert any("old" in str(c) and "new" in str(c) and "3" in str(c) for c in mock_print.call_args_list)
+
+
+def test_rename_tag_multiple():
+    client = MagicMock()
+    client.merge_tag.side_effect = [2, 1]
+    with patch("builtins.input", side_effect=["a", "b", "c", "d", ""]), patch("builtins.print"):
+        rename_tag(client, SelectionSet())
+    assert client.merge_tag.call_count == 2
+    client.merge_tag.assert_any_call("a", "b")
+    client.merge_tag.assert_any_call("c", "d")
+
+
+def test_rename_tag_blank_source_exits():
+    client = MagicMock()
+    with patch("builtins.input", return_value=""), patch("builtins.print"):
+        rename_tag(client, SelectionSet())
+    client.merge_tag.assert_not_called()
+
+
+def test_delete_tag_by_name_single():
+    client = MagicMock()
+    client.fetch_bookmarks_by_tag.return_value = [{"_id": 1}, {"_id": 2}]
+    with patch("builtins.input", side_effect=["mytag", ""]), patch("builtins.print") as mock_print:
+        delete_tag_by_name(client, SelectionSet())
+    client.delete_tag_with_cleanup.assert_called_once_with("mytag")
+    assert any("mytag" in str(c) and "2" in str(c) for c in mock_print.call_args_list)
+
+
+def test_delete_tag_by_name_multiple():
+    client = MagicMock()
+    client.fetch_bookmarks_by_tag.side_effect = [[{"_id": 1}], []]
+    with patch("builtins.input", side_effect=["a", "b", ""]), patch("builtins.print"):
+        delete_tag_by_name(client, SelectionSet())
+    assert client.delete_tag_with_cleanup.call_count == 2
+    client.delete_tag_with_cleanup.assert_any_call("a")
+    client.delete_tag_with_cleanup.assert_any_call("b")
+
+
+def test_delete_tag_by_name_blank_exits():
+    client = MagicMock()
+    with patch("builtins.input", return_value=""), patch("builtins.print"):
+        delete_tag_by_name(client, SelectionSet())
+    client.delete_tag_with_cleanup.assert_not_called()
+
+
+def test_rename_tag_blank_target_skips():
+    client = MagicMock()
+    with patch("builtins.input", side_effect=["old", "", ""]), patch("builtins.print") as mock_print:
+        rename_tag(client, SelectionSet())
+    client.merge_tag.assert_not_called()
+    assert any("Skipped" in str(c) for c in mock_print.call_args_list)

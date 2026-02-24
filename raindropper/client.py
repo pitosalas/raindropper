@@ -57,6 +57,31 @@ class RaindropClient:
         # Delete a list of tags by name via the Raindrop API.
         self._call("DELETE", "/tags", json={"tags": tag_ids})
 
+    def delete_tag_with_cleanup(self, tag_name):
+        # Remove tag_name from all bookmarks that use it, then delete the tag.
+        bookmarks = self.fetch_bookmarks_by_tag(tag_name)
+        for bookmark in bookmarks:
+            current = bookmark.get("tags", [])
+            new_tags = [t for t in current if t != tag_name]
+            self.update_bookmark_tags(bookmark["_id"], new_tags)
+            print(".", end="", flush=True)
+        if bookmarks:
+            print()
+        self.delete_tags([tag_name])
+
+    def merge_tag(self, source_tag, target_tag):
+        # Replace source_tag with target_tag on all bookmarks that use it, then delete source_tag.
+        bookmarks = self.fetch_bookmarks_by_tag(source_tag)
+        updated = 0
+        for bookmark in bookmarks:
+            current = bookmark.get("tags", [])
+            if target_tag not in current:
+                new_tags = [t for t in current if t != source_tag] + [target_tag]
+                self.update_bookmark_tags(bookmark["_id"], new_tags)
+                updated += 1
+        self.delete_tags([source_tag])
+        return updated
+
     def fetch_tags(self):
         # Returns list of tag objects from the Raindrop API.
         response = self._call("GET", "/tags")

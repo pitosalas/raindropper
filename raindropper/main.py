@@ -6,15 +6,20 @@ from raindropper.selection_set import SelectionSet
 load_dotenv()
 
 MENU_OPTIONS = [
-    ("Select single-use tags", "select_single_use_tags"),
-    ("Select single-use tags with other tags", "select_nonsolitary_single_use_tags"),
+    ("Delete singleton tags from bookmarks", "delete_singleton_tags_from_bookmarks"),
+    ("Delete tag by name", "delete_tag_by_name"),
+    ("Delete tags in selection set", "delete_selection_set_tags"),
+    ("Delete tags interactively", "delete_tags_interactively"),
+    ("Lint tags (propose merges)", "lint_tags"),
+    ("Remove stop words", "remove_stop_words"),
+    ("Rename tag", "rename_tag"),
+    ("Select bookmarks with mixed tags", "select_bookmarks_with_mixed_tags"),
     ("Select gibberish tags", "select_gibberish_tags"),
     ("Select multi-word tags", "select_multiword_tags"),
-    ("Select bookmarks with mixed tags", "select_bookmarks_with_mixed_tags"),
-    ("Remove stop words", "remove_stop_words"),
+    ("Select single-use tags", "select_single_use_tags"),
+    ("Select single-use tags with other tags", "select_nonsolitary_single_use_tags"),
+    ("Select zero-bookmark tags", "select_zero_bookmark_tags"),
     ("Split multi-word tags on bookmarks", "split_multiword_tags"),
-    ("Delete tags in selection set", "delete_selection_set_tags"),
-    ("Delete singleton tags from bookmarks", "delete_singleton_tags_from_bookmarks"),
 ]
 
 
