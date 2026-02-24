@@ -16,6 +16,27 @@ Status values:
 **Description**: In actions that loop over multiple items (e.g. `split_multiword_tags` iterating over bookmarks, `fetch_bookmarks` paginating), print a `.` without a newline after each iteration so the user can see progress. Print a newline when the loop completes.
 
 ---
+
+## F16 — Interactively Delete Singleton Tag from Each Bookmark in Selection Set
+**Priority**: High
+**Status**: done | Tests written: yes | Tests passing: yes
+**Description**: For each bookmark in the selection set (kind must be "bookmarks"), identify any tag on that bookmark whose global count is exactly 1 (used nowhere else). Display the bookmark title and all its current tags, then prompt "Delete singleton tag '<tag>'? [y/N]". If the user confirms, remove that tag from the bookmark via the Raindrop API. If a bookmark has no singleton tags, skip it silently. If a bookmark has multiple singleton tags, handle each one with a separate prompt. Print a final summary of how many tags were deleted across how many bookmarks.
+
+---
+
+## F15 — Rich Bookmark Display in Selection Set
+**Priority**: Medium
+**Status**: done | Tests written: yes | Tests passing: yes
+**Description**: When printing a selection set of kind "bookmarks", display each entry with its title and its list of tags (e.g. `1. My Bookmark Title [tag1, tag2, tag3]`), not just a raw object or index number. If a bookmark has no title, fall back to its URL. If it has no tags, show an empty bracket pair `[]`.
+
+---
+
+## F14 — Graceful ^C Interrupt During Selection Set Building
+**Priority**: Medium
+**Status**: done | Tests written: yes | Tests passing: yes
+**Description**: When a long-running operation is building a selection set (e.g. iterating over bookmarks or tags), catch `KeyboardInterrupt` (Ctrl+C) and stop the loop early rather than aborting the program. Preserve whatever items have been added to the selection set so far. Print a message such as "Interrupted — N item(s) collected so far." so the user knows the partial result is still available.
+
+---
 <!-- ACTIVE FEATURES ABOVE THIS LINE | COMPLETED FEATURES BELOW -->
 ---
 

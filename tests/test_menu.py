@@ -8,7 +8,7 @@ from raindropper.selection_set import SelectionSet
 class TestRunMenu(unittest.TestCase):
 
     @patch("raindropper.actions.select_single_use_tags")
-    @patch("builtins.input", side_effect=["1", "0"])
+    @patch("builtins.input", side_effect=["1", "x"])
     def test_valid_option_calls_handler(self, mock_input, mock_handler):
         client = MagicMock()
         ss = SelectionSet()
@@ -16,7 +16,7 @@ class TestRunMenu(unittest.TestCase):
         mock_handler.assert_called_once_with(client, ss)
 
     @patch("builtins.print")
-    @patch("builtins.input", side_effect=["99", "0"])
+    @patch("builtins.input", side_effect=["99", "x"])
     def test_invalid_option_prints_error(self, mock_input, mock_print):
         client = MagicMock()
         ss = SelectionSet()
@@ -25,12 +25,20 @@ class TestRunMenu(unittest.TestCase):
         self.assertTrue(any("Invalid option" in s for s in printed))
 
     @patch("raindropper.actions.select_single_use_tags")
-    @patch("builtins.input", side_effect=["q"])
-    def test_quit_with_q(self, mock_input, mock_handler):
+    @patch("builtins.input", side_effect=["x"])
+    def test_quit_with_x(self, mock_input, mock_handler):
         client = MagicMock()
         ss = SelectionSet()
         run_menu(client, ss)
         mock_handler.assert_not_called()
+
+    @patch("raindropper.actions.print_selection_set")
+    @patch("builtins.input", side_effect=["p", "x"])
+    def test_print_shortcut(self, mock_input, mock_handler):
+        client = MagicMock()
+        ss = SelectionSet()
+        run_menu(client, ss)
+        mock_handler.assert_called_once_with(client, ss)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 import unittest.mock
 from unittest.mock import MagicMock, patch
 
-from raindropper.actions import select_single_use_tags, print_selection_set, select_gibberish_tags, remove_stop_words, select_bookmarks_with_mixed_tags, select_multiword_tags, delete_selection_set_tags, split_multiword_tags, select_nonsolitary_single_use_tags
+from raindropper.actions import select_single_use_tags, print_selection_set, select_gibberish_tags, remove_stop_words, select_bookmarks_with_mixed_tags, select_multiword_tags, delete_selection_set_tags, split_multiword_tags, select_nonsolitary_single_use_tags, delete_singleton_tags_from_bookmarks
 from raindropper.selection_set import SelectionSet
 
 
@@ -258,3 +258,95 @@ def test_print_selection_set_with_items():
     calls = [str(c) for c in mock_print.call_args_list]
     assert any("foo" in s for s in calls)
     assert any("bar" in s for s in calls)
+
+
+def test_print_selection_set_bookmarks_shows_title_and_tags():
+    ss = SelectionSet()
+    ss.add_all([{"_id": 1, "title": "My Bookmark", "tags": ["alpha", "beta"]}], kind="bookmarks")
+    with patch("builtins.print") as mock_print:
+        print_selection_set(None, ss)
+    output = " ".join(str(c) for c in mock_print.call_args_list)
+    assert "My Bookmark" in output
+    assert "alpha" in output
+    assert "beta" in output
+
+
+def test_print_selection_set_bookmarks_no_title_falls_back_to_link():
+    ss = SelectionSet()
+    ss.add_all([{"_id": 2, "link": "https://example.com", "tags": []}], kind="bookmarks")
+    with patch("builtins.print") as mock_print:
+        print_selection_set(None, ss)
+    output = " ".join(str(c) for c in mock_print.call_args_list)
+    assert "https://example.com" in output
+
+
+def test_delete_singleton_tags_confirmed():
+    ss = SelectionSet()
+    ss.add_all([{"_id": 1, "title": "My Page", "tags": ["rare", "common"]}], kind="bookmarks")
+    client = MagicMock()
+    client.fetch_tags.return_value = [{"_id": "rare", "count": 1}, {"_id": "common", "count": 5}]
+    with patch("builtins.input", return_value="y"), patch("builtins.print"):
+        delete_singleton_tags_from_bookmarks(client, ss)
+    client.update_bookmark_tags.assert_called_once_with(1, ["common"])
+
+
+def test_delete_singleton_tags_declined():
+    ss = SelectionSet()
+    ss.add_all([{"_id": 1, "title": "My Page", "tags": ["rare", "common"]}], kind="bookmarks")
+    client = MagicMock()
+    client.fetch_tags.return_value = [{"_id": "rare", "count": 1}, {"_id": "common", "count": 5}]
+    with patch("builtins.input", return_value="n"), patch("builtins.print"):
+        delete_singleton_tags_from_bookmarks(client, ss)
+    client.update_bookmark_tags.assert_not_called()
+
+
+def test_delete_singleton_tags_no_singletons_skips():
+    ss = SelectionSet()
+    ss.add_all([{"_id": 1, "title": "My Page", "tags": ["common"]}], kind="bookmarks")
+    client = MagicMock()
+    client.fetch_tags.return_value = [{"_id": "common", "count": 5}]
+    with patch("builtins.input") as mock_input, patch("builtins.print"):
+        delete_singleton_tags_from_bookmarks(client, ss)
+    mock_input.assert_not_called()
+    client.update_bookmark_tags.assert_not_called()
+
+
+def test_delete_singleton_tags_multiple_singletons_per_bookmark():
+    ss = SelectionSet()
+    ss.add_all([{"_id": 1, "title": "My Page", "tags": ["r1", "r2", "common"]}], kind="bookmarks")
+    client = MagicMock()
+    client.fetch_tags.return_value = [
+        {"_id": "r1", "count": 1}, {"_id": "r2", "count": 1}, {"_id": "common", "count": 5}
+    ]
+    with patch("builtins.input", side_effect=["y", "n"]), patch("builtins.print"):
+        delete_singleton_tags_from_bookmarks(client, ss)
+    client.update_bookmark_tags.assert_called_once_with(1, ["r2", "common"])
+
+
+def test_delete_singleton_tags_empty_set():
+    ss = SelectionSet()
+    client = MagicMock()
+    with patch("builtins.print") as mock_print:
+        delete_singleton_tags_from_bookmarks(client, ss)
+    mock_print.assert_called_once_with("Selection set is empty.")
+    client.update_bookmark_tags.assert_not_called()
+
+
+def test_delete_singleton_tags_wrong_kind():
+    ss = SelectionSet()
+    ss.add_all([{"_id": "foo"}], kind="tags")
+    client = MagicMock()
+    with patch("builtins.print") as mock_print:
+        delete_singleton_tags_from_bookmarks(client, ss)
+    mock_print.assert_called_once_with("Selection set does not contain bookmarks.")
+    client.update_bookmark_tags.assert_not_called()
+
+
+def test_print_selection_set_bookmarks_no_tags_shows_empty_list():
+    ss = SelectionSet()
+    ss.add_all([{"_id": 3, "title": "No Tags Here", "tags": []}], kind="bookmarks")
+    with patch("builtins.print") as mock_print:
+        print_selection_set(None, ss)
+    output = " ".join(str(c) for c in mock_print.call_args_list)
+    assert "No Tags Here" in output
+    assert "[]" in output

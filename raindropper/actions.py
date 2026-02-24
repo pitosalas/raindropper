@@ -139,12 +139,49 @@ def delete_selection_set_tags(client, selection_set):
     print(f"Deleted {len(tag_ids)} tag(s).")
 
 
+def delete_singleton_tags_from_bookmarks(client, selection_set):
+    # For each bookmark in the selection set, prompt to delete any singleton tags.
+    if not selection_set.items():
+        print("Selection set is empty.")
+        return
+    if selection_set.kind != "bookmarks":
+        print("Selection set does not contain bookmarks.")
+        return
+    tags = client.fetch_tags()
+    singleton_names = {t["_id"] for t in tags if t.get("count", 0) == 1}
+    deleted_total = 0
+    bookmarks_changed = 0
+    for bookmark in selection_set.items():
+        title = bookmark.get("title") or bookmark.get("link") or str(bookmark.get("_id", "?"))
+        current_tags = bookmark.get("tags", [])
+        singletons = [t for t in current_tags if t in singleton_names]
+        if not singletons:
+            continue
+        print(f"\n{title} {current_tags}")
+        tags_to_remove = []
+        for tag in singletons:
+            answer = input(f"  Delete singleton tag '{tag}'? [y/N] ").strip().lower()
+            if answer == "y":
+                tags_to_remove.append(tag)
+        if tags_to_remove:
+            new_tags = [t for t in current_tags if t not in tags_to_remove]
+            client.update_bookmark_tags(bookmark["_id"], new_tags)
+            deleted_total += len(tags_to_remove)
+            bookmarks_changed += 1
+    print(f"\nDeleted {deleted_total} singleton tag(s) across {bookmarks_changed} bookmark(s).")
+
+
 def print_selection_set(client, selection_set):
     # Print each item in the selection set as a numbered list.
     items = selection_set.items()
     if not items:
         print("Selection set is empty.")
         return
-    for i, item in enumerate(items, start=1):
-        label = item.get("_id") or item.get("title") or str(item)
-        print(f"{i}. {label}")
+    if selection_set.kind == "bookmarks":
+        for i, item in enumerate(items, start=1):
+            title = item.get("title") or item.get("link") or str(item.get("_id", "?"))
+            tags = item.get("tags", [])
+            print(f"{i}. {title} {tags}")
+    else:
+        for i, item in enumerate(items, start=1):
+            print(f"{i}. {item.get('_id', str(item))}")

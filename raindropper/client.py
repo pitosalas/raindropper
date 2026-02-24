@@ -23,18 +23,22 @@ class RaindropClient:
 
     def fetch_bookmarks(self):
         # Returns all bookmark objects from the Raindrop API using pagination.
+        # A KeyboardInterrupt stops the loop early and returns what was collected.
         bookmarks = []
         page = 0
         perpage = 50
-        while True:
-            response = self._call("GET", "/raindrops/0", params={"perpage": perpage, "page": page})
-            items = response.json().get("items", [])
-            bookmarks.extend(items)
-            print(".", end="", flush=True)
-            if len(items) < perpage:
-                print()
-                break
-            page += 1
+        try:
+            while True:
+                response = self._call("GET", "/raindrops/0", params={"perpage": perpage, "page": page})
+                items = response.json().get("items", [])
+                bookmarks.extend(items)
+                print(".", end="", flush=True)
+                if len(items) < perpage:
+                    print()
+                    break
+                page += 1
+        except KeyboardInterrupt:
+            print(f"\nInterrupted — {len(bookmarks)} bookmark(s) fetched so far.")
         return bookmarks
 
     def fetch_bookmarks_by_tag(self, tag):

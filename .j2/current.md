@@ -1,34 +1,38 @@
-# Current Session State
-
 ## What was just completed
-- F12: progress dots in fetch_bookmarks pagination and split_multiword_tags loop (milestone granted)
-- F13: select_nonsolitary_single_use_tags — single-use tags that share bookmarks with other tags (milestone granted)
-- Task files F12, F13 archived to done/
-- Explicit dot-output test added for F12
+- F15: Rich bookmark display — `print_selection_set` shows title + tags for bookmarks
+- F16: Interactively delete singleton tags from bookmarks in selection set
+- F14: Graceful ^C interrupt in `fetch_bookmarks` — returns partial results with message
+- Menu: exit changed from `0` to `x`; print selection set moved to `p` shortcut
 
-## In progress
-Nothing — all features done and milestoned.
+## What is currently in progress
+Nothing — all features complete.
 
-## Next steps
-- `/features-update` to add new features
+## What is next
+- `/milestone` to formally close this milestone
+- Or add more features via `/features-update`
 
 ## Open questions
-- None
+None.
 
-## Feature status
+## Feature status summary
 
-| Feature | Status |
-|---|---|
-| F01 Raindrop API Client | done |
-| F02 Interactive CLI Menu | done |
-| F03 Selection Set | done |
-| F04 Select Single-Use Tags | done |
-| F05 Print Selection Set | done |
-| F06 Select Gibberish Tags | done |
-| F07 Remove Stop Words | done |
-| F08 Select Bookmarks with Mixed Tags | done |
-| F09 Delete Tags in Selection Set | done |
-| F10 Select Multi-Word Tags | done |
-| F11 Split Multi-Word Tags on Bookmarks | done |
-| F12 Progress Dots | done |
-| F13 Select Nonsolitary Single-Use Tags | done |
+| ID  | Feature                                      | Status |
+|-----|----------------------------------------------|--------|
+| F01 | Raindrop API Client                          | done   |
+| F02 | Interactive CLI Menu                         | done   |
+| F03 | Selection Set                                | done   |
+| F04 | Select Single-Use Tags                       | done   |
+| F05 | Print Selection Set                          | done   |
+| F06 | Select Gibberish Tags                        | done   |
+| F07 | Remove Stop Words                            | done   |
+| F08 | Select Bookmarks with Mixed Tags             | done   |
+| F09 | Delete Tags in Selection Set                 | done   |
+| F10 | Select Multi-Word Tags                       | done   |
+| F11 | Split Multi-Word Tags on Bookmarks           | done   |
+| F12 | Progress Dots                                | done   |
+| F13 | Nonsolitary Single-Use Tag Filter            | done   |
+| F14 | Graceful ^C Interrupt                        | done   |
+| F15 | Rich Bookmark Display                        | done   |
+| F16 | Interactive Singleton Tag Deletion           | done   |
+
+44 tests passing.
