@@ -13,11 +13,11 @@ collection_keywords = {
     "productivity": {
         "productivity", "focus", "time", "management", "efficiency", "workflow", "habit", "goal", "task", "calendar", "organize", "self-improvement", "motivation", "routine", "planning", "skills"
     },
-    "Entrepreneurship": {
-        "business", "startup", "entrepreneur", "pivot", "lean", "venture", "capital", "funding", "ipo", "profit", "earnings", "marketing", "buy", "sell", "scale", "scaling", "customer", "market", "successful", "launch", "MVP", "Viable"
+    "entrepreneurship": {
+        "business", "startup", "entrepreneur", "pivot", "lean", "venture", "capital", "funding", "ipo", "profit", "earnings", "marketing", "buy", "sell", "scale", "scaling", "customer", "market", "successful", "launch", "MVP", "Viable", "salary", "raise", "stripe", "improv", "microsoft", "lotus", "oracle"
     }, 
     "ai/ml": {
-        "ai", "ml", "artificial", "intelligence", "machine", "learning", "deep", "neural", "network", "openai", "anthropic", "claude", "llm", "chatgpt", "transformer", "nlp", "vision", "model", "data", "copilot", "training", "inference"
+        "ai", "ml", "artificial", "intelligence", "machine", "learning", "deep", "neural", "network", "openai", "anthropic", "claude", "llm", "chatgpt", "transformer", "nlp", "vision", "model", "data", "copilot", "training", "inference", "prompt", "RAG", "llama"
     },
     "engineering": {
         "engineering", "engineer", "bridge", "canal", "construction", "infrastructure", "mechanical", "civil", "electrical", "system", "project", "process"
@@ -31,12 +31,18 @@ collection_keywords = {
     "how to": {
         "how", "tutorial", "guide", "step", "instruction", "manual", "walkthrough", "tips", "tricks", "faq", "help", "learn", "learning", "explained", "fix", "repair", "explain", "explainer", "hack", "hacks", "diy", "handmade", "buy", "shop", "artisanal"
     },
+    "hobbies": {
+        "watches", "photography", "photo", "photograph", "hiking", "movies", "television", "cable", "netflix", "jewish", "smithsonian", "arlington", "shir", "vilna"
+    }, 
     "software engineering": {
-        "automation", "pip", "package", "library", "async", "concurrency", "unittest", "virtualenv", "venv", "import", "module", "pandas", "numpy", "matplotlib", "scipy", "flask", "django", "fastapi", "cli", "shell", "terminal", "repl", "algorithm", "datastructure", "debug", "test", "devops", "REST", "typing", "git", "github", "database", "dbms", "programmer", "coder", "developer", "markdown", "docker", "linux", "unix", "mock", "mocking", "tdd", "software", "hardware", "architecture", "object-oriented", "object", "pattern", "ACM", "http", "tcp", "udp", "tdd", "rails", "django", "flask", "fastapi", "php", "coroutines", "co-routines", "heroku", "fly.io", "environment", "applicatoin", "system", "rss", "dotfiles", "volume", "plugins", "server", "aws", "serverless", "plug-ins", "vscode", "authentication", "oauth", "SQL", "jquery", "torrent", "graphql", "ssl", "node", "npm", "bytes", "SOA", "CLI"
+        "automation", "pip", "package", "library", "async", "concurrency", "unittest", "virtualenv", "venv", "import", "module", "pandas", "numpy", "matplotlib", "scipy", "flask", "django", "fastapi", "cli", "shell", "terminal", "repl", "algorithm", "datastructure", "debug", "test", "devops", "REST", "typing", "git", "github", "database", "databases",  "dbms", "programmer", "coder", "developer", "markdown", "docker", "linux", "unix", "mock", "mocking", "tdd", "software", "hardware", "architecture", "object-oriented", "object", "pattern", "ACM", "http", "tcp", "udp", "tdd", "rails", "django", "flask", "fastapi", "php", "coroutines", "co-routines", "heroku", "fly.io", "environment", "applicatoin", "system", "rss", "dotfiles", "volume", "plugins", "server", "aws", "serverless", "plug-ins", "vscode", "authentication", "oauth", "SQL", "jquery", "torrent", "graphql", "ssl", "node", "npm", "bytes", "SOA", "CLI", "refactor", "refactoring", "debugger", "debugging", "postgres", "regexp", "regexpr", "regexper", "sinatra", "rack", "stack", "stacks", "queues", "agile", "scrum", "streamlit", "monitor", "API", "domain", "algorithms", "computer", "monolith", "QR"
     }, 
     "programming": {
-        "programming", "code", "coding", "scripting", "script", "interpreter", "function", "class", "variable", "loop", "list", "dict", "set", "tuple", "comprehension", "decorator", "unittest", "virtualenv", "venv", "numpy", "matplotlib", "scipy", "algorithm", "datastructure", "debug", "ruby", "python", "rust", "go", "hash", "programmer", "programmers", "coders", "developers", "coder", "developer", "python3", "function", "method", "variable"
+        "programming", "code", "coding", "scripting", "script", "interpreter", "function", "class", "variable", "loop", "list", "dict", "set", "tuple", "comprehension", "decorator", "unittest", "virtualenv", "venv", "numpy", "matplotlib", "scipy", "datastructure", "debug", "ruby", "python", "rust", "go", "hash", "programmer", "programmers", "coders", "developers", "coder", "developer", "python3", "function", "method", "variable"
     },
+    "academia": {
+        "academic", "academics", "teaching", "learning", "brandeis", "university", "grading", "research", "olin", "ashe", "cosi"
+    }
 }
 STOP_WORDS = {
     "a", "an", "the", "and", "or", "but", "of", "in", "on", "at",
