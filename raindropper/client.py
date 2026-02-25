@@ -4,11 +4,19 @@ import time
 import requests
 
 RAINDROP_API = "https://api.raindrop.io/rest/v1"
-RATE_DELAY = 0.5
+RATE_DELAY = 0.25
+
 
 
 class RaindropClient:
     # Reads RAINDROP_TOKEN from env; crashes if missing.
+
+    def fetch_collections(self):
+        """
+        Returns list of collection objects from the Raindrop API.
+        """
+        response = self._call("GET", "/collections")
+        return response.json().get("items", [])
 
     def __init__(self):
         self.token = os.environ["RAINDROP_TOKEN"]
@@ -21,25 +29,15 @@ class RaindropClient:
         time.sleep(RATE_DELAY)
         return response
 
-    def fetch_bookmarks(self):
-        # Returns all bookmark objects from the Raindrop API using pagination.
-        # A KeyboardInterrupt stops the loop early and returns what was collected.
-        bookmarks = []
-        page = 0
-        perpage = 50
-        try:
-            while True:
-                response = self._call("GET", "/raindrops/0", params={"perpage": perpage, "page": page})
-                items = response.json().get("items", [])
-                bookmarks.extend(items)
-                print(".", end="", flush=True)
-                if len(items) < perpage:
-                    print()
-                    break
-                page += 1
-        except KeyboardInterrupt:
-            print(f"\nInterrupted — {len(bookmarks)} bookmark(s) fetched so far.")
-        return bookmarks
+    def fetch_bookmarks(self, collection_id=None, page=0, perpage=5):
+        """
+        Returns bookmark objects from the Raindrop API, one page at a time.
+        If a collection_id is provided, fetches from that collection.
+        """
+        collection_path = f"/{collection_id}" if collection_id else "/0"
+        response = self._call("GET", f"/raindrops{collection_path}", params={"perpage": perpage, "page": page})
+        items = response.json().get("items", [])
+        return items
 
     def fetch_bookmarks_by_tag(self, tag):
         # Returns all bookmarks that have the given tag.
@@ -86,3 +84,7 @@ class RaindropClient:
         # Returns list of tag objects from the Raindrop API.
         response = self._call("GET", "/tags")
         return response.json().get("items", [])
+
+    def update_bookmark_collection(self, bookmark_id, collection_id):
+        # Move a bookmark to a different collection by updating its collectionId.
+        self._call("PUT", f"/raindrop/{bookmark_id}", json={"collection": {"$id": collection_id}})

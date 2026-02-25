@@ -3,6 +3,12 @@ Status values:
 - **Tests written**: `no` / `yes`
 - **Tests passing**: `n/a` / `no` / `yes`
 
+## F22 — Assign Bookmarks to Collections Interactively
+**Priority**: High
+**Status**: not started | Tests written: no | Tests passing: n/a
+**Description**: For each bookmark, propose a collection assignment from existing collections. Present proposals in batches of 20, showing bookmark info and suggested collection. User input options: 'yes' (assign all in batch), Enter (skip batch), or space-separated numbers (assign only those bookmarks). Execute assignments as requested.
+
+
 ## F21 — Delete Tag by Name
 **Priority**: High
 **Status**: done | Tests written: yes | Tests passing: yes
@@ -76,6 +82,11 @@ Present proposals in batches of 10. For each batch, print the proposals numbered
 **Description**: When a long-running operation is building a selection set (e.g. iterating over bookmarks or tags), catch `KeyboardInterrupt` (Ctrl+C) and stop the loop early rather than aborting the program. Preserve whatever items have been added to the selection set so far. Print a message such as "Interrupted — N item(s) collected so far." so the user knows the partial result is still available.
 
 ---
+## F23 — Assign Bookmarks to Collections Using Keywords
+**Priority**: Medium
+**Status**: done | Tests written: yes | Tests passing: yes
+**Description**: Assign bookmarks to collections based on keyword matching. Each collection can have a list of associated keywords. If a bookmark's title contains a keyword, it is assigned to that collection. If no match is found, fallback to string similarity or default collection.
+
 <!-- ACTIVE FEATURES ABOVE THIS LINE | COMPLETED FEATURES BELOW -->
 ---
 
@@ -155,3 +166,4 @@ Present proposals in batches of 10. For each batch, print the proposals numbered
 **Description**: For each multi-word tag in the selection set (kind must be "tags"), find all bookmarks that use that tag via the Raindrop API. For each such bookmark, remove the multi-word tag and add each individual word as a separate tag, but only if that word is not already a tag on the bookmark. Update the bookmark via the API. Print a summary of how many bookmarks were updated. Prompt for confirmation before making any changes.
 
 ---
+

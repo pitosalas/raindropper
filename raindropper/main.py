@@ -20,6 +20,7 @@ MENU_OPTIONS = [
     ("Select single-use tags with other tags", "select_nonsolitary_single_use_tags"),
     ("Select zero-bookmark tags", "select_zero_bookmark_tags"),
     ("Split multi-word tags on bookmarks", "split_multiword_tags"),
+    ("Assign bookmarks to collections", "assign_bookmarks_to_collections"),
 ]
 
 

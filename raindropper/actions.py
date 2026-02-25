@@ -1,5 +1,221 @@
-import difflib
 import re
+import difflib
+
+# ...existing code...
+
+# -*- coding: utf-8 -*-
+import re
+from raindropper.client import RaindropClient
+from raindropper.selection_set import SelectionSet
+
+# Table mapping collection names to keywords (update as needed)
+collection_keywords = {
+    "productivity": {
+        "productivity", "focus", "time", "management", "efficiency", "workflow", "habit", "goal", "task", "calendar", "organize", "self-improvement", "motivation", "routine", "planning", "skills"
+    },
+    "Entrepreneurship": {
+        "business", "startup", "entrepreneur", "pivot", "lean", "venture", "capital", "funding", "ipo", "profit", "earnings", "marketing", "buy", "sell", "scale", "scaling", "customer", "market", "successful", "launch", "MVP", "Viable"
+    }, 
+    "ai/ml": {
+        "ai", "ml", "artificial", "intelligence", "machine", "learning", "deep", "neural", "network", "openai", "anthropic", "claude", "llm", "chatgpt", "transformer", "nlp", "vision", "model", "data", "copilot", "training", "inference"
+    },
+    "engineering": {
+        "engineering", "engineer", "bridge", "canal", "construction", "infrastructure", "mechanical", "civil", "electrical", "system", "project", "process"
+    },
+    "design": {
+        "design", "designer", "graphics", "graphic", "layout", "ui", "ux", "interface", "visual", "typography", "color", "aesthetics", "sketch", "figma", "adobe", "photoshop", "tinkercad", "fusion", "illustrator", "ui", "ux", "uis", "html", "css", "bootstrap"
+    },
+    "robotics": {
+        "robotics", "robot", "automation", "autonomous", "mechatronics", "servo", "actuator", "sensor", "robotic", "manipulator", "drone", "ros", "navigation", "control", "hardware", "motor", "robotshop", "embedded", "ros2", "topics", "urdf", "arduino", "raspberry", "raspi", "lidar", "teensy", "sparkfun", "adafruit", "waveshare", "sensors", "foxglove", "kalman"
+    },
+    "how to": {
+        "how", "tutorial", "guide", "step", "instruction", "manual", "walkthrough", "tips", "tricks", "faq", "help", "learn", "learning", "explained", "fix", "repair", "explain", "explainer", "hack", "hacks", "diy", "handmade", "buy", "shop", "artisanal"
+    },
+    "software engineering": {
+        "automation", "pip", "package", "library", "async", "concurrency", "unittest", "virtualenv", "venv", "import", "module", "pandas", "numpy", "matplotlib", "scipy", "flask", "django", "fastapi", "cli", "shell", "terminal", "repl", "algorithm", "datastructure", "debug", "test", "devops", "REST", "typing", "git", "github", "database", "dbms", "programmer", "coder", "developer", "markdown", "docker", "linux", "unix", "mock", "mocking", "tdd", "software", "hardware", "architecture", "object-oriented", "object", "pattern", "ACM", "http", "tcp", "udp", "tdd", "rails", "django", "flask", "fastapi", "php", "coroutines", "co-routines", "heroku", "fly.io", "environment", "applicatoin", "system", "rss", "dotfiles", "volume", "plugins", "server", "aws", "serverless", "plug-ins", "vscode", "authentication", "oauth", "SQL", "jquery", "torrent", "graphql", "ssl", "node", "npm", "bytes", "SOA", "CLI"
+    }, 
+    "programming": {
+        "programming", "code", "coding", "scripting", "script", "interpreter", "function", "class", "variable", "loop", "list", "dict", "set", "tuple", "comprehension", "decorator", "unittest", "virtualenv", "venv", "numpy", "matplotlib", "scipy", "algorithm", "datastructure", "debug", "ruby", "python", "rust", "go", "hash", "programmer", "programmers", "coders", "developers", "coder", "developer", "python3", "function", "method", "variable"
+    },
+}
+STOP_WORDS = {
+    "a", "an", "the", "and", "or", "but", "of", "in", "on", "at",
+    "to", "for", "with", "by", "from", "is", "it", "as", "be", "this",
+    "we", "are", "that", "about", "what", "which", "was", "were", "so", "if", "then", "than", "also", "into", "out", "up", "down", "off", "not", "do", "does", "did", "has", "have", "had", "will", "would", "can", "could", "should", "may", "might", "must"
+}
+
+def extract_top_words(text, n=3):
+    words = re.findall(r"\b\w+\b", text.lower())
+    filtered = [w for w in words if w not in STOP_WORDS]
+    counts = {}
+    for w in filtered:
+        counts[w] = counts.get(w, 0) + 1
+    return [w for w, _ in sorted(counts.items(), key=lambda x: -x[1])[:n]]
+
+def assign_bookmarks_to_collections(client, selection_set):
+    """
+    Interactively assign bookmarks from a chosen collection to other collections.
+    """
+    collections = client.fetch_collections()
+    
+    # Display available collections
+    print("\nAvailable collections:")
+    for idx, col in enumerate(collections, start=1):
+        print(f"  {idx}. {col.get('title', 'Untitled')} (ID: {col.get('_id')})")
+    
+    # Prompt user to select a collection
+    while True:
+        choice = input("\nWhich collection do you want to reorganize? (Enter number or 'x' to cancel): ").strip()
+        if choice.lower() == 'x':
+            print("Cancelled.")
+            return
+        try:
+            choice_idx = int(choice) - 1
+            if 0 <= choice_idx < len(collections):
+                source_collection = collections[choice_idx]
+                break
+            else:
+                print(f"Please enter a number between 1 and {len(collections)}.")
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+    
+    print(f"\nReorganizing collection: {source_collection.get('title', 'Untitled')}")
+
+    unsorted_collection = next((c for c in collections if c.get('title', '').lower() == 'unsorted'), None)
+
+    # All collections are valid targets (bookmarks can stay in the source collection)
+    target_collections = collections
+
+    batch_num = 0
+    batch_size = 500
+    api_limit = 50  # Raindrop API max per request
+    
+    while True:
+        # Fetch enough pages to reach batch_size
+        bookmarks = []
+        pages_to_fetch = (batch_size + api_limit - 1) // api_limit  # Ceiling division
+        
+        for i in range(pages_to_fetch):
+            page = batch_num * pages_to_fetch + i
+            page_bookmarks = client.fetch_bookmarks(
+                collection_id=source_collection.get('_id'), 
+                page=page, 
+                perpage=api_limit
+            )
+            if not page_bookmarks:
+                break
+            bookmarks.extend(page_bookmarks)
+            if len(bookmarks) >= batch_size:
+                bookmarks = bookmarks[:batch_size]
+                break
+        
+        if not bookmarks:
+            print(f"No more bookmarks to process in the '{source_collection.get('title', 'selected')}' collection.")
+            break
+
+        print(f"\n--- Processing Batch {batch_num + 1} from '{source_collection.get('title', 'selected')}' ({len(bookmarks)} bookmarks) ---")
+        proposals = []
+        for bookmark in bookmarks:
+            title = bookmark.get("title", "")
+            body = bookmark.get("body", "")
+            tags = " ".join(bookmark.get("tags", []))
+            text = f"{title} {body} {tags}".strip()
+            top_words = [w.lower() for w in extract_top_words(text, n=5)]
+
+            best_collections = []
+            best_score = -1
+            
+            for collection in target_collections:  # Only consider non-source collections
+                cname = collection.get("title", "").lower()
+                keywords = set(k.lower() for k in collection_keywords.get(cname, set()))
+                score = sum(1 for w in top_words if w in keywords)
+                if score > best_score:
+                    best_score = score
+                    best_collections = [collection]
+                elif score == best_score:
+                    best_collections.append(collection)
+
+            matched_collection = None
+            if len(best_collections) > 1:
+                for c in best_collections:
+                    cname_parts = c.get("title", "").lower().split('/')
+                    if any(part in top_words for part in cname_parts):
+                        matched_collection = c
+                        break
+            
+            if not matched_collection and best_collections:
+                matched_collection = best_collections[0]
+            elif not best_collections:
+                # No keyword matches - default to Unsorted or first available collection
+                matched_collection = unsorted_collection if unsorted_collection else (target_collections[0] if target_collections else None)
+            
+            proposals.append({
+                "bookmark": bookmark,
+                "proposed_collection": matched_collection,
+            })
+
+        for idx, proposal in enumerate(proposals, start=1):
+            bookmark = proposal["bookmark"]
+            collection = proposal["proposed_collection"]
+            collection_name = collection.get("title", str(collection.get("_id"))) if collection else "(none)"
+            print(f"  {idx}. {bookmark.get('title', str(bookmark.get('_id')))} → {collection_name}")
+
+        user_input = input("Assign (Enter=all, s=skip, nums=partial, q/x=stop): ").strip().lower()
+
+        if user_input in ['q', 'x']:
+            print("Stopping.")
+            break
+        
+        if user_input == 's':
+            print("Skipped batch.")
+            page += 1
+            continue
+
+        to_assign_indices = []
+        if user_input == "":  # Enter accepts all
+            to_assign_indices = list(range(len(proposals)))
+        else:
+            try:
+                parts = re.split(r'[\s,]+', user_input)
+                indices = [int(i)-1 for i in parts if i.isdigit() and 0 < int(i) <= len(proposals)]
+                if not indices and user_input:
+                     raise ValueError("Invalid input")
+                to_assign_indices = indices
+            except ValueError:
+                print("Invalid input. Skipping batch.")
+                batch_num += 1
+                continue
+        
+        assigned_count = 0
+        skipped_count = 0
+        if to_assign_indices:
+            for idx in to_assign_indices:
+                proposal = proposals[idx]
+                bookmark = proposal["bookmark"]
+                collection = proposal["proposed_collection"]
+                if collection:
+                    # Check if bookmark is already in the target collection
+                    current_collection_id = bookmark.get("collection", {}).get("$id")
+                    target_collection_id = collection["_id"]
+                    
+                    if current_collection_id == target_collection_id:
+                        # Already in the right collection, no need to update
+                        skipped_count += 1
+                        print(f"Skipped '{bookmark.get('title', '')}' (already in '{collection.get('title', '')}').")
+                    else:
+                        try:
+                            client.update_bookmark_collection(bookmark["_id"], target_collection_id)
+                            assigned_count += 1
+                            print(f"Assigned '{bookmark.get('title', '')}' to collection '{collection.get('title', '')}.'")
+                        except Exception as e:
+                            print(f"ERROR: Could not assign bookmark: {e}")
+            print(f"Assigned {assigned_count} bookmark(s), skipped {skipped_count} (already in correct collection) in this batch.")
+        else:
+            if user_input:
+                 print("No valid assignments made for this batch.")
+
+        batch_num += 1
+
 
 
 def _is_gibberish(word):
